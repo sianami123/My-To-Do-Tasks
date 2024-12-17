@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Add Persian Date Picker CSS and JS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.css"
+    />
+    <script
+      type="text/javascript"
+      src="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.js"
+    ></script>
+  </head>
+  <body class="bg-white">
+    <div class="container mx-auto">
+      <!--! header -->
+      <header
+        class="flex justify-between items-center p-4 bg-[#5900E1] sticky top-0"
+      >
+        <div class="flex items-center gap-3">
+          <svg
+            class="text-white size-8"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="currentColor"
+            viewBox="0 0 16 16"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"
+            />
+          </svg>
+          <h1 class="text-2xl text-white">My To-Do Tasks</h1>
+        </div>
+        <div class="flex items-center gap-4">
+          <!--! search box -->
+          <div
+            class="flex items-center gap-2 bg-[#7000E3] rounded-lg px-3 py-2"
+          >
+            <svg
+              class="text-white size-5"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"
+              />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search"
+              class="bg-transparent text-white placeholder-white outline-none w-40"
+            />
+          </div>
+          <!--! filter -->
+          <button class="text-white hover:bg-[#7000E3] p-2 rounded-lg">
+            <svg
+              class="size-6"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2z"
+              />
+            </svg>
+          </button>
+          <!--! add task -->
+          <button
+            onclick="openAddTaskModal()"
+            class="text-white hover:bg-[#7000E3] p-2 rounded-lg"
+          >
+            <svg
+              class="size-6"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm6.5 4.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 1 0z"
+              />
+            </svg>
+          </button>
+        </div>
+      </header>
+      <!--! main table -->
+      <div class="">
+        <table class="w-full">
+          <thead>
+            <tr class="border">
+              <th class="p-4 text-left border">Task Name</th>
+              <th class="p-4 text-center border">Priority</th>
+              <th class="p-4 text-center border">Status</th>
+              <th class="p-4 text-center border">Deadline</th>
+              <th class="p-4 text-center border">Actions</th>
+            </tr>
+          </thead>
+          <div>
+            <tbody class="table-data"></tbody>
+          </div>
+        </table>
+      </div>
+    </div>
+    <!-- ! modal overlay -->
+    <div
+      class="overlay hidden bg-black/50 w-full h-full fixed top-0 left-0"
+    ></div>
+    <!-- ! modal container -->
+    <div
+      class="modal-container hidden bg-white p-6 rounded-lg shadow-lg fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+    ></div>
+
+    <script src="hw-9.js"></script>
+  </body>
+</html>
