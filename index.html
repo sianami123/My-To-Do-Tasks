@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Add Persian Date Picker CSS and JS -->
+
     <link
       rel="stylesheet"
       href="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.css"
@@ -39,24 +39,30 @@
           <div
             class="flex items-center gap-2 bg-[#7000E3] rounded-lg px-3 py-2"
           >
-            <svg
-              class="text-white size-5"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="currentColor"
-              viewBox="0 0 16 16"
-            >
-              <path
-                d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"
-              />
-            </svg>
+            <button>
+              <svg
+                class="text-white size-5"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"
+                />
+              </svg>
+            </button>
             <input
+              oninput="searchTasks(event)"
               type="text"
               placeholder="Search"
               class="bg-transparent text-white placeholder-white outline-none w-40"
             />
           </div>
           <!--! filter -->
-          <button class="text-white hover:bg-[#7000E3] p-2 rounded-lg">
+          <button
+            onclick="openFilterModal()"
+            class="text-white hover:bg-[#7000E3] p-2 rounded-lg"
+          >
             <svg
               class="size-6"
               xmlns="http://www.w3.org/2000/svg"
@@ -91,7 +97,7 @@
         <table class="w-full">
           <thead>
             <tr class="border">
-              <th class="p-4 text-left border">Task Name</th>
+              <th class="p-4 text-left border pr-[100px]">Task Name</th>
               <th class="p-4 text-center border">Priority</th>
               <th class="p-4 text-center border">Status</th>
               <th class="p-4 text-center border">Deadline</th>
@@ -99,6 +105,7 @@
             </tr>
           </thead>
           <div>
+            <!-- ! table will add here -->
             <tbody class="table-data"></tbody>
           </div>
         </table>
@@ -113,6 +120,6 @@
       class="modal-container hidden bg-white p-6 rounded-lg shadow-lg fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
     ></div>
 
-    <script src="hw-9.js"></script>
+    <script src="script.js"></script>
   </body>
 </html>

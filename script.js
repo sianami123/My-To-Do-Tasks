@@ -1,39 +1,92 @@
+// import { getLocalStorage, setLocalStorage } from "./localstorage.js";
+// import { getTasksAPI, addTaskAPI, deleteTaskAPI, editTaskAPI } from "./api.js";
 const tableData = document.querySelector(".table-data");
 const modalOverlay = document.querySelector(".overlay");
 const modalContainer = document.querySelector(".modal-container");
 
-// let tasks = [
-//   {
-//     taskName: "walk the dog",
-//     priority: "low",
-//     status: "todo",
-//     deadLine: "2024-12-21",
-//     taskDetails: "walk the dog lorem ipsum dolor sit amet2",
-//     taskId: 17339217093152,
-//   },
-//   {
-//     taskName: "walk the dog2",
-//     priority: "medium",
-//     status: "doing",
-//     deadLine: "2024-12-21",
-//     taskDetails: "walk the dog lorem ipsum dolor sit amet3",
-//     taskId: 17339217093165,
-//   },
-//   {
-//     taskName: "walk the dog3",
-//     priority: "high",
-//     status: "done",
-//     deadLine: "2024-12-21",
-//     taskDetails: "walk the dog lorem ipsum dolor sit amet4",
-//     taskId: 17339217093178,
-//   },
-// ];
+const baseUrl = "https://67618d7346efb37323722400.mockapi.io/api/v1";
 
-let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+let tasksVar = [];
 
-function renderTasks() {
+initialize();
+
+async function initialize() {
+  try {
+    tasksVar = getLocalStorage("tasks");
+    console.log("tasksVar in initialize:", tasksVar);
+
+    const apiTasks = await getTasksAPI();
+    if (apiTasks && apiTasks.length > 0) {
+      tasksVar = apiTasks;
+      try {
+        localStorage.setItem("tasks", JSON.stringify(tasksVar));
+      } catch (error) {
+        console.error("Error saving to localStorage:", error);
+      }
+    }
+
+    renderTasks(tasksVar);
+  } catch (error) {
+    console.error("Error initializing tasks:", error);
+    renderTasks([]);
+  }
+}
+
+async function searchTasks(event) {
+  const searchValue = event.target.value;
+  const searchedTasks = tasksVar.filter((task) =>
+    task.taskName.includes(searchValue)
+  );
+  renderTasks(searchedTasks);
+}
+
+function openFilterModal() {
+  modalOverlay.classList.remove("hidden");
+  modalContainer.classList.remove("hidden");
+  // const selectedStatus = document.getElementById("status").value;
+  // const selectedPriority = document.getElementById("priority").value;
+  modalContainer.innerHTML = `
+  <div>
+    <label for="status" class="block mb-2 font-medium">status:</label>
+    <select id="status" class="w-full p-2 rounded-lg border border-gray-300 mb-4">
+      <option value="todo">Todo</option>
+      <option value="doing">Doing</option>
+      <option value="done">Done</option>
+     </select>
+  </div>
+  <div>
+    <label for="priority" class="block mb-2 font-medium">priority:</label>
+    <select id="priority" class="w-full p-2 rounded-lg border border-gray-300 mb-4">
+      <option value="low">Low</option>
+      <option value="medium">Medium</option>
+      <option value="high">High</option>
+     </select>
+  </div>
+  <button onclick="applyFilters()" class="bg-[#7000E3] text-white p-2 rounded-lg">Filter</button>
+  `;
+}
+
+function applyFilters() {
+  const status = document.getElementById("status").value;
+  const priority = document.getElementById("priority").value;
+  console.log("status in applyFilters:", status);
+  console.log("priority in applyFilters:", priority);
+  const filteredTasks = tasksVar.filter((task) => {
+    return task.status === status && task.priority === priority;
+  });
+  renderTasks(filteredTasks);
+  // closeModal();
+}
+
+function renderTasks(tasks = []) {
+  if (!Array.isArray(tasks)) {
+    console.error("Invalid tasks data:", tasks);
+    tasks = [];
+  }
+
   tableData.innerHTML = "";
   tasks.forEach((task) => {
+    // console.log("task in renderTasks:", task);
     const taskStatusStyle =
       task.status === "todo"
         ? "bg-red-400 text-white"
@@ -63,7 +116,7 @@ function renderTasks() {
                 </td>
                 <td class="p-4 border flex justify-center">
                   <div class="flex gap-2">
-                    <button onclick="deleteTask(${task.taskId})" class="p-2 text-white bg-red-400 rounded-lg">
+                    <button onclick="deleteTask(${task.id})" class="p-2 text-white bg-red-400 rounded-lg">
                       <svg
                         class="size-3"
                         xmlns="http://www.w3.org/2000/svg"
@@ -78,7 +131,7 @@ function renderTasks() {
                         />
                       </svg>
                     </button>
-                    <button onclick="openEditTaskModal(${task.taskId})" class="p-2 text-white bg-blue-400 rounded-lg">
+                    <button onclick="openEditTaskModal(${task.id})" class="p-2 text-white bg-blue-400 rounded-lg">
                       <svg
                         class="size-3"
                         xmlns="http://www.w3.org/2000/svg"
@@ -90,7 +143,7 @@ function renderTasks() {
                         />
                       </svg>
                     </button>
-                    <button onclick="viewTask(${task.taskId})" class="p-2 text-white bg-gray-400 rounded-lg">
+                    <button onclick="viewTask(${task.id})" class="p-2 text-white bg-gray-400 rounded-lg">
                       <svg
                         class="size-3"
                         xmlns="http://www.w3.org/2000/svg"
@@ -120,7 +173,7 @@ function openAddTaskModal() {
   
   <div class="mb-4">
     <label class="block mb-2 font-medium">Priority:</label>
-    <span class=" priority-error text-red-500 text-sm hidden ">*required</span>
+    <span class=" priority-error text-red-500 text-sm hidden">*required</span>
     <div class="flex gap-4">
       <label class="flex items-center">
         <input type="radio" name="priority" value="low" class="mr-2">
@@ -171,39 +224,65 @@ function openAddTaskModal() {
   });
 }
 
-function addTask() {
+async function addTask() {
   const taskName = document.getElementById("taskName").value;
   const priority = document.querySelector(
     'input[name="priority"]:checked'
-  ).value;
+  )?.value;
   const deadLine = document.getElementById("deadLine").value;
   const taskDetails = document.querySelector('textarea[name="Text1"]').value;
+
   if (validateAddTask(taskName, priority, deadLine, taskDetails)) {
-    tasks.push({
-      taskName: taskName,
-      priority: priority,
-      status: "todo",
-      deadLine: deadLine,
-      taskDetails: taskDetails,
-      taskId: Date.now(),
-    });
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-    renderTasks();
-    closeModal();
+    try {
+      const newTask = {
+        taskName: taskName,
+        priority: priority,
+        status: "todo",
+        deadLine: deadLine,
+        taskDetails: taskDetails,
+      };
+
+      // Try to add to API first
+      await addTaskAPI(newTask);
+
+      // If API succeeds, update local state
+      tasksVar.push(newTask);
+
+      // Try to update localStorage, but continue if it fails
+      try {
+        localStorage.setItem("tasks", JSON.stringify(tasksVar));
+      } catch (storageError) {
+        console.error("Error saving to localStorage:", storageError);
+      }
+
+      renderTasks(tasksVar);
+      closeModal();
+    } catch (error) {
+      console.error("Error adding task:", error);
+      alert("Error adding task. Please try again.");
+    }
   }
 }
 
-function deleteTask(taskId) {
-  const task = tasks.find((task) => task.taskId === taskId);
+async function deleteTask(taskId) {
+  console.log("taskId in deleteTask:", taskId);
+  const task = tasksVar.find((task) => Number(task.id) === Number(taskId));
   if (confirm(`Are you sure you want to delete this task ${task.taskName}?`)) {
-    tasks = tasks.filter((task) => task.taskId !== taskId);
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-    renderTasks();
+    try {
+      await deleteTaskAPI(taskId);
+      tasksVar = tasksVar.filter((task) => Number(task.id) !== Number(taskId));
+      localStorage.setItem("tasks", JSON.stringify(tasksVar));
+      renderTasks(tasksVar);
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
   }
 }
 
 function openEditTaskModal(taskId) {
-  const task = tasks.find((task) => task.taskId === taskId);
+  // console.log("taskId in openEditTaskModal:", taskId);
+  const task = tasksVar.find((task) => Number(task.id) === Number(taskId));
+  // console.log("task in openEditTaskModal:", task);
   modalOverlay.classList.remove("hidden");
   modalContainer.classList.remove("hidden");
   modalContainer.innerHTML = `
@@ -262,20 +341,48 @@ function openEditTaskModal(taskId) {
   </div>
   <label for="deadLine" class="block mb-2 font-medium">DeadLine:</label>
   <span class="deadline-error text-red-500 text-sm hidden">*required</span>
-  <input type="date" id="deadLine" value="${
-    task.deadLine
-  }" class="w-full p-2 rounded-lg border border-gray-300 mb-4">
+  <input type="text" 
+         id="deadLine" 
+         data-jdp
+         data-jdp-min-date="today"  
+         data-jdp-format="YYYY/MM/DD"
+         value="${task.deadLine}"
+         class="w-full p-2 rounded-lg border border-gray-300 mb-4">
   <label for="taskDetails" class="block mb-2 font-medium">Task Details:</label>
   <span class="task-details-error text-red-500 text-sm hidden">*required</span>
   <textarea name="Text1" cols="40" rows="5"  class="w-full p-2 rounded-lg border border-gray-300 mb-4">${
     task.taskDetails
   }</textarea>
   <button onclick="editTask(${
-    task.taskId
+    task.id
   })" class="bg-[#7000E3] text-white p-2 rounded-lg">Edit Task</button>`;
+  // console.log("task.id in openEditTaskModal:", task.id);
+  jalaliDatepicker.startWatch({
+    separatorChar: "/",
+    minDate: "today",
+    format: "YYYY/MM/DD",
+    days: ["ش", "ی", "د", "س", "چ", "پ", "ج"],
+    months: [
+      "فروردین",
+      "اردیبهشت",
+      "خرداد",
+      "تیر",
+      "مرداد",
+      "شهریور",
+      "مهر",
+      "آبان",
+      "آذر",
+      "دی",
+      "بهمن",
+      "اسفند",
+    ],
+  });
 }
+
 function editTask(taskId) {
-  const task = tasks.find((task) => task.taskId === taskId);
+  // console.log("taskId in editTask:", taskId);
+  const task = tasksVar.find((task) => Number(task.id) === Number(taskId));
+  // console.log("task in editTask:", task);
   const taskName = document.getElementById("taskName").value;
   const priority = document.querySelector(
     'input[name="priority"]:checked'
@@ -284,21 +391,32 @@ function editTask(taskId) {
   const taskDetails = document.querySelector('textarea[name="Text1"]').value;
   const status = document.querySelector('input[name="status"]:checked').value;
   if (validateAddTask(taskName, priority, deadLine, taskDetails)) {
-    task.taskName = taskName;
-    task.priority = priority;
-    task.deadLine = deadLine;
-    task.taskDetails = taskDetails;
-    task.status = status;
-    console.log("task in edit", task);
-    console.log("tasks in edit", tasks);
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-    renderTasks();
-    closeModal();
+    try {
+      editTaskAPI(taskId, {
+        taskName: taskName,
+        priority: priority,
+        deadLine: deadLine,
+        taskDetails: taskDetails,
+        status: status,
+      });
+      task.taskName = taskName;
+      task.priority = priority;
+      task.deadLine = deadLine;
+      task.taskDetails = taskDetails;
+      task.status = status;
+      console.log("task in edit", task);
+      console.log("tasks in edit", tasksVar);
+      localStorage.setItem("tasks", JSON.stringify(tasksVar));
+      renderTasks(tasksVar);
+      closeModal();
+    } catch (error) {
+      console.error("Error editing task:", error);
+    }
   }
 }
 
 function viewTask(taskId) {
-  const task = tasks.find((task) => task.taskId === taskId);
+  const task = tasksVar.find((task) => task.taskId === taskId);
   modalOverlay.classList.remove("hidden");
   modalContainer.classList.remove("hidden");
   const taskStatusStyle =
@@ -359,4 +477,96 @@ function closeModal() {
 
 modalOverlay.addEventListener("click", closeModal);
 
-renderTasks();
+// **********************
+// **********************
+
+async function getTasksAPI() {
+  try {
+    const response = await fetch(`${baseUrl}/tasks`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch tasks");
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching tasks:", error);
+    return [];
+  }
+}
+
+async function deleteTaskAPI(taskId) {
+  try {
+    // console.log("taskId in deleteTaskAPI:", taskId);
+    // await fetch(`${baseUrl}/tasks/${taskId}`, { method: "DELETE" });
+    console.log(`${baseUrl}/tasks/${taskId}`);
+    const response = await fetch(`${baseUrl}/tasks/${taskId}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      throw new Error("Failed to delete task");
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error deleting task:", error);
+  }
+}
+
+async function editTaskAPI(taskId, task) {
+  try {
+    // await fetch(`${baseUrl}/tasks/${taskId}`, {
+    //   method: "PUT",
+    //   body: JSON.stringify(task),
+    // });
+    const response = await fetch(`${baseUrl}/tasks/${taskId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(task),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to edit task");
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error editing task:", error);
+  }
+}
+
+async function addTaskAPI(task) {
+  try {
+    const response = await fetch(`${baseUrl}/tasks`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(task),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to add task");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error adding task to API:", error);
+    throw error;
+  }
+}
+
+function setLocalStorage(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.error("Error writing to localStorage:", error);
+  }
+}
+
+function getLocalStorage(key) {
+  try {
+    const tasks = localStorage.getItem(key);
+    return tasks ? JSON.parse(tasks) : [];
+  } catch (error) {
+    console.error("Error reading from localStorage:", error);
+    return [];
+  }
+}
