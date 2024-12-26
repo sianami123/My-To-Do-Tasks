@@ -13,7 +13,7 @@ initialize();
 async function initialize() {
   try {
     tasksVar = getLocalStorage("tasks");
-    console.log("tasksVar in initialize:", tasksVar);
+    console.log("tasksVar in initialize localstorage:", tasksVar);
 
     const apiTasks = await getTasksAPI();
     if (apiTasks && apiTasks.length > 0) {
